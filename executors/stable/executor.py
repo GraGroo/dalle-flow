@@ -83,16 +83,9 @@ class StableDiffusionGenerator(Executor):
         
     def _h_and_w_from_parameters(self, parameters, opt):
         height = parameters.get('height', opt.height)
-        if height is not None:
-            height = int(height)
-        else:
-            height = opt.height
+        height = int(height) if height is not None else opt.height
         width = parameters.get('width', opt.width)
-        if width is not None:
-            width = int(width)
-        else:
-            width = opt.width
-
+        width = int(width) if width is not None else opt.width
         return height, width
 
     @requests(on='/')
@@ -299,8 +292,8 @@ class StableDiffusionGenerator(Executor):
 
         assert 0.5 <= strength <= 1., 'can only work with strength in [0.5, 1.0]'
 
+        batch_size = 1
         for d in docs:
-            batch_size = 1
             prompt = d.text
             assert prompt is not None
 
@@ -325,7 +318,7 @@ class StableDiffusionGenerator(Executor):
                 batch_size)
 
             assert len(weighted_subprompts_start) == len(weighted_subprompts_end), \
-                'Weighted subprompts for interpolation must be equal in number'
+                    'Weighted subprompts for interpolation must be equal in number'
 
             to_iterate = list(enumerate(np.linspace(0, 1, num_images)))
 
@@ -366,9 +359,6 @@ class StableDiffusionGenerator(Executor):
                         unconditioning=unconditioning,
                     )
 
-                    (
-                        image,
-                    ) = itemgetter('images')(extra_data)
                 else:
                     samples_last, extra_data = self.stable_diffusion_module.sample(
                         prompt,
@@ -387,10 +377,9 @@ class StableDiffusionGenerator(Executor):
                         unconditioning=unconditioning,
                     )
 
-                    (
-                        image,
-                    ) = itemgetter('images')(extra_data)
-
+                (
+                    image,
+                ) = itemgetter('images')(extra_data)
                 torch.cuda.empty_cache()
 
                 buffered = BytesIO()

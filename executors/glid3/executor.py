@@ -28,8 +28,8 @@ class GLID3Diffusion(Executor):
         request_time = time.time()
 
         with tempfile.NamedTemporaryFile(
-                suffix='.png',
-        ) as f_in:
+                    suffix='.png',
+            ) as f_in:
             self.logger.info(f'diffusion [{text}] ...')
             from dalle_flow_glid3.cli_parser import parser
 
@@ -54,11 +54,12 @@ class GLID3Diffusion(Executor):
             args = parser.parse_args(kw_str_list)
             do_run(args, d.embedding, self.blank_bert_embedding, self.blank_clip_embedding)
 
-            kw.update({
+            kw |= {
                 'generator': 'GLID3-XL',
                 'request_time': request_time,
                 'created_time': time.time(),
-            })
+            }
+
             for f in glob.glob(f'{args.output_path}/*.png'):
                 _d = Document(uri=f, text=d.text, tags=kw).convert_uri_to_datauri()
                 d.matches.append(_d)

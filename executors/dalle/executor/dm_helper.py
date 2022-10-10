@@ -90,7 +90,7 @@ def generate_images(prompt: str, num_predictions: int):
 
     # generate images
     images = []
-    for i in range(max(1, num_predictions // jax.device_count())):
+    for _ in range(max(1, num_predictions // jax.device_count())):
         # get a new key
         key, subkey = jax.random.split(key)
 
@@ -111,7 +111,9 @@ def generate_images(prompt: str, num_predictions: int):
         # decode images
         decoded_images = p_decode(encoded_images, vqgan_params)
         decoded_images = decoded_images.clip(0.0, 1.0).reshape((-1, 256, 256, 3))
-        for img in decoded_images:
-            images.append(Image.fromarray(np.asarray(img * 255, dtype=np.uint8)))
+        images.extend(
+            Image.fromarray(np.asarray(img * 255, dtype=np.uint8))
+            for img in decoded_images
+        )
 
     return images
